@@ -1,0 +1,16 @@
+//Query to look for events where and ISO file is mounted as a Virtual DVD and correlate with recent file events to determine the file name
+
+DeviceEvents
+| where ActionType == "PnpDeviceBlocked" or ActionType == "PnpDeviceAllowed"
+| extend parsed=parse_json(AdditionalFields)
+| extend MediaClassGuid = tostring(parsed.ClassGuid)
+| extend MediaInstanceId = tostring(parsed.DeviceInstanceId)
+| extend MediaDeviceId = tostring(parsed.MatchingDeviceId)
+| extend MountTimeStamp = Timestamp
+| where MediaDeviceId has("Virtual_DVD-ROM")
+| join DeviceFileEvents on DeviceId
+| extend FileEventName = FileName1
+| where FileEventName has "iso"
+| where datetime_diff("Minute",MountTimeStamp,Timestamp) < 1
+| extend ProbableISO = FileName1 
+| project MountTimeStamp , DeviceId, DeviceName, ActionType, MediaClassGuid, MediaDeviceId, MediaInstanceId, ProbableISO, AdditionalFields
