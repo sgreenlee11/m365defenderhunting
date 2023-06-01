@@ -1,0 +1,42 @@
+//Collection of simple queries to help with allow list tuning
+
+//Find emails from a specific domain that were overridden by allow list (Would have been blocked otherwise)
+
+EmailEvents
+| where OrgLevelAction == "Allow"
+| where ThreatTypes != ""
+| where SenderFromDomain =~ "domain.com"
+
+//Find any emails received from a specific domain (Helpful to find domains with 0 correspondence for easy removal)
+
+EmailEvents
+| where SenderFromDomain =~ "domain.com"
+
+//Find any emails received from multiple domains in a single query (has_any can be added to other queries to report on multiple senders/domains in a single query)
+
+EmailEvents
+| where SenderFromDomain has_any("domain1.com","domain2.com","domain3.com")
+
+//Find any emails that failed DMARC from a specific domain (Helpful to determine if allow listing by DMARC enforcement ETR is viable)
+
+EmailEvents
+| where AuthenticationDetails has "\"DMARC\":\"fail\""
+| where SenderFromDomain =~ "domain.com"
+
+//Find all emails from a specific domain, and group them based on sender (Helpful to determine if a domain level allow can be moved to one or more specific sender allows)
+
+EmailEvents
+|where SenderFromDomain =~ "domain.com"
+|summarize hint.strategy = shuffle count() by tolower(SenderFromAddress)
+
+//Find emails from a specific sender that were overridden by allow list (Would have been blocked otherwise)
+
+EmailEvents
+| where OrgLevelAction == "Allow"
+| where ThreatTypes != ""
+|where SenderFromAddress =~ "user@domain.com"
+
+//Find any emails received from a specific sender (Helpful to find domains with 0 correspondence for easy removal)
+
+EmailEvents
+|where SenderFromAddress =~ "user@domain.com"

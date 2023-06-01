@@ -1,0 +1,8 @@
+//Safe Documents is part of Microsoft Defender for Office 365. However, reporting requires Events from Defender for Endpoint. The following
+//query will return and Malicious Documents found by Safe Documents
+
+DeviceEvents
+| where ActionType == "SafeDocFileScan"
+| extend parsed=parse_json(AdditionalFields)
+| extend State = tostring(parsed.State)
+| where State == "FoundMaliciousDocument"

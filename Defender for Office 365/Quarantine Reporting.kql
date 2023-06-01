@@ -1,0 +1,27 @@
+//Released messages, including approved requests by day
+
+
+CloudAppEvents 
+| where ActionType == "QuarantineReleaseMessage"
+| summarize count() by bin_at(Timestamp, 1d, datetime(2022-01-10 07:00:00.0))
+| project-rename Releases = count_
+| render timechart with (title="Qurantine Releases by Day")
+
+//Messages Requested for Release per day
+
+CloudAppEvents 
+| where ActionType == "QuarantineRequestReleaseMessage"
+| summarize count() by bin_at(Timestamp, 1d, datetime(2022-01-10 07:00:00.0))
+| project-rename ReleaseRequests = count_
+| render timechart with (title="Qurantine Releases by Day")
+
+//Group released messages by detection type. Useful to see what is leading to the largest number of messages being released. 
+
+
+CloudAppEvents 
+| where ActionType == "QuarantineReleaseMessage"
+| extend parsed=parse_json(RawEventData)
+| extend NetworkMessageId = tostring(parsed.NetworkMessageId)
+| join EmailEvents on NetworkMessageId
+| summarize count() by DetectionMethods
+| order by count_ desc 

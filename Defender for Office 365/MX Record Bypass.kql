@@ -1,0 +1,11 @@
+//When using a 3rd party hygiene product it's important to limit inbound SMTP traffic to only the 3rd party hygiene product. 
+// This is done by creating a new Inbound Connector in the Exchange Online and limiting the remote IP addresses to the 3rd party hygiene product.
+// This query can be run before this change to look for any legitimate messages that would be blocked by this change.
+
+EmailEvents
+|where EmailDirection == "Inbound"
+|where not( SenderIPv4 has_any (
+"X.X.X.X",
+"X.X.X.X",
+"X.X.X.X"))
+|project Timestamp,SenderMailFromAddress,SenderIPv4,RecipientEmailAddress,EmailDirection
