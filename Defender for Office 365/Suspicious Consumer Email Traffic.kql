@@ -1,0 +1,6 @@
+//Consumer Email Services - Suspicious Email Activity based on a addresses with more than 4 digits in the name
+
+EmailEvents
+| where SenderFromDomain has_any ("icloud.com","gmail.com","outlook.com")
+| where ThreatTypes == ""
+| where SenderFromAddress matches regex "[a-zA-z].*\\d{4,100}@"
